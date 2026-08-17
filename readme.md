@@ -174,7 +174,15 @@ jq -Rs '{x509_pem_cert: .}' \
 ```
 
 ## Step 6 — Upload the CA certificate to the Advanced cluster
+Pre-Flight:   Check to see if a certificate already exists:
+```bash
+curl --silent --show-error --fail-with-body \
+  --url "${COCKROACH_SERVER}/api/v1/clusters/${CLUSTER_ID}/client-ca-cert" \
+  --header "Authorization: Bearer ${API_KEY}" |
+jq '{status, x509_pem_cert}'
+```
 
+If a CA is found, then the following should use "PATCH", not "POST".  It looks like a "POST" will not overwrite an existing CA cert.   
 ```bash
 curl --request POST \
   --url "${COCKROACH_SERVER}/api/v1/clusters/${CLUSTER_ID}/client-ca-cert" \
