@@ -174,7 +174,7 @@ jq -Rs '{x509_pem_cert: .}' \
 ```
 
 ## Step 6 — Upload the CA certificate to the Advanced cluster
-Pre-Flight:   Check to see if a certificate already exists:
+Pre-Flight:   Check to see if a certificate already exists.  If it does exist, check the appendix to see if the CAs match.
 ```bash
 curl --silent --show-error --fail-with-body \
   --url "${COCKROACH_SERVER}/api/v1/clusters/${CLUSTER_ID}/client-ca-cert" \
@@ -328,3 +328,25 @@ Uploading `ca.crt` also makes that CA a trusted issuer. More precisely, the clus
 So it means “trust valid client certificates issued by this CA,” not blindly accept every arbitrary object bearing its signature.
 
 This is why `ca.key` is extremely sensitive: anyone possessing it could issue a valid-looking client certificate for `CN=ron` or another SQL user trusted by the cluster.
+
+
+
+# Appendix
+If a CA has alraedy been uploaded, we can tell if the uploaded CA and the local CA have the same fingerprint.  
+```bash
+LOCAL_FP=$(
+  openssl x509 \
+    -in ~/crdb-cert-lab/certs/ca.crt \
+    -noout -fingerprint -sha256
+)
+
+REMOTE_FP=$(
+  curl --silent --show-error --fail-with-body \
+    --url "${COCKROACH_SERVER}/api/v1/clusters/${CLUSTER_ID}/client-ca-cert" \
+    --header "Authorization: Bearer ${API_KEY}" |
+  jq -r '.x509_pem_cert' |
+  openssl x509 -noout -fingerprint -sha256
+)
+
+printf 'Local:  %s\nRemote: %s\n' "$LOCAL_FP" "$REMOTE_FP"
+```
