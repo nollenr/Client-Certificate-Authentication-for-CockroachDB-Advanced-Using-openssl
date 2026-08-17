@@ -287,6 +287,11 @@ cockroach sql --url \
 "postgresql://ron@nollen-cert-test-zgh.aws-us-west-2.cockroachlabs.cloud:26257/defaultdb?sslmode=verify-full&sslrootcert=$HOME/Library/CockroachCloud/certs/1d4d68ed-a173-461e-a522-4fbca2b062e1/nollen-cert-test-ca.crt&sslcert=$HOME/crdb-cert-lab/certs/client.ron.crt&sslkey=$HOME/crdb-cert-lab/certs/client.ron.key"
 ```
 
+If a `DATABASE_URL` was previously configured without user certs and no password, then this works as well:
+```bash
+ cockroach sql --url ${DATABASE_URL}"&sslcert=$HOME/crdb-cert-lab/certs/client.ron.crt&sslkey=$HOME/crdb-cert-lab/certs/client.ron.key"
+```
+
 ## CSR proof versus TLS handshake proof
 
 The CockroachDB cluster never receives or examines the CSR. The CSR is used only during certificate issuance between Ron and the client CA.
